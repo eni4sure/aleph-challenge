@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Tomiwa Writes On A Blackboard - Aleph Fellowship</title>
+</head>
+
+<body>
+
+    <div id="the_top">
+        *Helper: <a href="#the_end">click here</a> to go to end of working
+    </div>
+
+    <h2>Value of the final number</h2>
+    <h3 id="final_answer"></h3>
+
+    <br>
+
+    <h2>Numbers on the black board:</h2>
+    <p id="blackboard_numbers">1</p>
+
+    <br>
+
+    <h2>(Workings) Erasing and Writing the numbers (x + y + xy)</h2>
+    <p>Picking at random: &nbsp; <b>x and y = (x + y + xy)</b></p>
+    <h3>Therefore,</h3>
+    <p id="erasing_and_writing"></p>
+
+    <div id="the_end">
+        <p><b>The END</b></p>
+        *Helper: <a href="#the_top">click here</a> to go to the beginning of the working
+    </div>
+
+    <script>
+
+        let blackBoardNumbersString = "1";
+
+        for (let i = 2; i <= 2021; i++) {
+            blackBoardNumbersString += `, 1/${i}`;
+        }
+
+        document.querySelector('#blackboard_numbers').innerHTML = blackBoardNumbersString;
+        let blackBoardNumbersStringArray = blackBoardNumbersString.split(", ");
+        let boardOriginalLength = blackBoardNumbersStringArray.length;
+
+        i = 0;
+        while (i < boardOriginalLength) {
+
+            if (blackBoardNumbersStringArray.length == 1) {
+                document.querySelector('#final_answer').append(
+                    `${Math.ceil(blackBoardNumbersStringArray[0])}`
+                );
+                break;
+            };
+
+            let new_number = eval(blackBoardNumbersStringArray[0]) + eval(blackBoardNumbersStringArray[1]) + (eval(blackBoardNumbersStringArray[0]) * eval(blackBoardNumbersStringArray[1]));
+            document.querySelector('#erasing_and_writing').append(
+                `${blackBoardNumbersStringArray[0]} & ${blackBoardNumbersStringArray[1]} = (${blackBoardNumbersStringArray[0]} + ${blackBoardNumbersStringArray[1]} + ${eval(blackBoardNumbersStringArray[0]) * eval(blackBoardNumbersStringArray[1])}) = ${new_number}, `,
+                document.createElement("br"),
+                document.createElement("br")
+            );
+
+            blackBoardNumbersStringArray.splice(0, 2);
+            blackBoardNumbersStringArray.push(new_number);
+            blackBoardNumbersStringArray.sort();
+
+            i++;
+        }
+    </script>
+</body>
+
+</html>

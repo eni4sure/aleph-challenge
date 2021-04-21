@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>TicTacToe Game - Aleph Fellowship</title>
+</head>
+<style>
+    a {
+        text-decoration: none;
+    }
+
+    section {
+        text-align: center;
+    }
+
+    .game_container {
+        display: grid;
+        grid-template-columns: repeat(3, auto);
+        width: 306px;
+        margin: 50px auto;
+    }
+
+    .cell {
+        width: 100px;
+        height: 100px;
+        box-shadow: 0 0 0 1px #000;
+        border: 1px solid #000;
+        line-height: 100px;
+        font-size: 60px;
+    }
+
+    .game_restart {
+        visibility: hidden;
+    }
+</style>
+
+<body>
+    <section>
+        <h1 class="game_title">Eniola's Tic Tac Toe</h1>
+        <div class="game_container">
+            <div data-cell-id="0" onclick="CellClicked(0,true);" class="cell"></div>
+            <div data-cell-id="1" onclick="CellClicked(1,true);" class="cell"></div>
+            <div data-cell-id="2" onclick="CellClicked(2,true);" class="cell"></div>
+            <div data-cell-id="3" onclick="CellClicked(3,true);" class="cell"></div>
+            <div data-cell-id="4" onclick="CellClicked(4,true);" class="cell">X</div>
+            <div data-cell-id="5" onclick="CellClicked(5,true);" class="cell"></div>
+            <div data-cell-id="6" onclick="CellClicked(6,true);" class="cell"></div>
+            <div data-cell-id="7" onclick="CellClicked(7,true);" class="cell"></div>
+            <div data-cell-id="8" onclick="CellClicked(8,true);" class="cell"></div>
+        </div>
+        <h2 class="game_status"></h2>
+        <button class="game_restart"><a href="">Restart Game</a></button>
+    </section>
+
+    <script>
+        const statusDisplay = document.querySelector('.game_status');
+        const restartButtonDisplay = document.querySelector('.game_restart');
+
+        let gameActive = true;
+        let players = ["X", "O"];
+        let currentPlayer = players[1];
+        let boardState = ["", "", "", "", "X", "", "", "", ""];
+        let statusMessage = {
+            "winX": `X has won!`,
+            "winO": `Player O has won! :( (Not gonna happen)`,
+            "draw": `Game ended in a draw!`
+        };
+
+        const winningConditions = [
+            [0, 1, 2],
+            [0, 3, 6],
+            [2, 5, 8],
+            [6, 7, 8],
+            [0, 4, 8],
+            [2, 4, 6],
+            [1, 4, 7],
+            [3, 4, 5]
+        ];
+
+        function CellClicked(CellId, nextStep) {
+            if (boardState[CellId] !== "" || !gameActive) return;
+            boardState[CellId] = currentPlayer;
+            document.querySelector(`.cell[data-cell-id='${CellId}']`).innerHTML = currentPlayer;
+            ResultValidation(false);
+
+            if (nextStep) {
+                switchPlayer();
+                computerTurn();
+                switchPlayer();
+            }
+        }
+
+        function ResultValidation(isMinimaxRun) {
+            let winnerFound = false;
+            let winner;
+
+            for (let i = 0; i <= 6; i++) {
+                const winCondition = winningConditions[i];
+                let a = boardState[winCondition[0]];
+                let b = boardState[winCondition[1]];
+                let c = boardState[winCondition[2]];
+                if (a === '' || b === '' || c === '') continue;
+                if (a === b && b === c) {
+                    winner = a;
+                    winnerFound = true;
+                    break;
+                }
+            }
+            
+            if (winnerFound) {
+                if (isMinimaxRun) {
+                    return winner;
+                } else {
+                    statusDisplay.innerHTML = statusMessage[`win${winner}`];
+                    restartButtonDisplay.style.visibility = "visible";
+                    gameActive = false;
+                    return;
+                }
+            }
+
+            let noWinner = !boardState.includes("");
+            if (noWinner) {
+                if (isMinimaxRun) {
+                    return 'tie';
+                } else {
+                    statusDisplay.innerHTML = statusMessage["draw"];
+                    restartButtonDisplay.style.visibility = "visible";
+                    gameActive = false;
+                    return;
+                }
+            }
+
+            if (isMinimaxRun) {
+                return null;
+            }
+        }
+
+        function switchPlayer() {
+            currentPlayer = (currentPlayer === players[1]) ? players[0] : players[1];
+        }
+
+        function computerTurn() {
+            let bestScore = -Infinity;
+            let bestMoveCellId;
+
+            for (let index = 0; index < 9; index++) {
+                if (boardState[index] == "") {
+                    boardState[index] = players[0];
+                    let score = minimax(boardState, 0, false);
+                    boardState[index] = "";
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestMoveCellId = index;
+                    }
+                }
+            }
+
+            CellClicked(bestMoveCellId, false);
+        }
+
+        let scores = {
+            X: 1,
+            O: -1,
+            tie: 0
+        }
+
+        function minimax(boardState, depth, isMaximizing) {
+            let result = ResultValidation(true);
+
+            if (result !== null) {
+                return scores[result];
+            }
+
+            if (isMaximizing) {
+                let bestScore = -Infinity;
+                for (let index = 0; index < 9; index++) {
+                    if (boardState[index] == "") {
+                        boardState[index] = players[0];
+                        let score = minimax(boardState, depth + 1, false);
+                        boardState[index] = "";
+                        bestScore = Math.max(score, bestScore);
+                    }
+                }
+                return bestScore;
+            } else {
+                let bestScore = Infinity;
+                for (let index = 0; index < 9; index++) {
+                    if (boardState[index] == "") {
+                        boardState[index] = players[1];
+                        let score = minimax(boardState, depth + 1, true);
+                        boardState[index] = "";
+                        bestScore = Math.min(score, bestScore);
+                    }
+                }
+                return bestScore;
+            }
+        }
+    </script>
+</body>
+
+</html>
